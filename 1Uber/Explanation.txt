@@ -1,0 +1,644 @@
+# ML PRACTICAL 1: UBER FARE PREDICTION
+
+## 1. Aim
+
+To predict the fare of an Uber ride based on pickup and drop-off locations using Linear Regression and Random Forest Regression. The practical includes dataset preprocessing, outlier identification, correlation analysis, model implementation, and performance evaluation.
+
+## 2. Problem Statement
+
+The objective is to predict the fare amount of an Uber ride using the given dataset.
+
+The following operations are performed:
+
+1. Preprocess the dataset.
+2. Identify outliers.
+3. Check correlation between numerical variables.
+4. Implement Linear Regression and Random Forest Regression.
+5. Evaluate and compare both models using R² Score, RMSE, and MAE.
+
+## 3. Software and Libraries Required
+
+* Python 3
+* Jupyter Notebook
+* Pandas
+* NumPy
+* Matplotlib
+* Seaborn
+* Scikit-learn
+
+### Purpose of Each Library
+
+**Pandas:** Used to load, manipulate, clean, and analyze the dataset.
+
+**NumPy:** Used for numerical calculations, including calculating RMSE.
+
+**Matplotlib:** Used to create graphs and visualizations.
+
+**Seaborn:** Used to create the boxplot and correlation heatmap.
+
+**Scikit-learn:** Used to split the dataset, implement regression models, and evaluate their performance.
+
+**Math:** Provides mathematical functions required to calculate geographical distance.
+
+## 4. How to Install and Run Jupyter Notebook
+
+### Step 1: Check Python
+
+Open Command Prompt and execute:
+
+python --version
+
+If Python is installed correctly, its version will be displayed.
+
+### Step 2: Install Jupyter Notebook
+
+python -m pip install notebook
+
+### Step 3: Install the Required Libraries
+
+python -m pip install pandas numpy matplotlib seaborn scikit-learn
+
+These libraries are required to execute the practical.
+
+### Step 4: Open the Practical Folder
+
+Navigate to the folder containing your notebook and dataset.
+
+For example:
+
+cd /d C:\Users\athar\Downloads\Codes\ML
+
+Replace this path with your actual folder path if it is different.
+
+### Step 5: Launch Jupyter Notebook
+
+jupyter notebook
+
+Open your Uber Fare Prediction notebook in the browser.
+
+**Important:** The `uber.csv` dataset should be inside the same working folder from which the notebook is running, unless the code specifies its full file path.
+
+---
+
+## 5. Explanation of the Program
+
+### Step 1: Importing Libraries
+
+The notebook imports Pandas, NumPy, Matplotlib, Seaborn, mathematical functions, and the necessary Scikit-learn classes.
+
+These imports provide the functions required for data preprocessing, visualization, geographical distance calculation, model training, and performance evaluation.
+
+### Step 2: Loading the Dataset
+
+The dataset is loaded using:
+
+df = pd.read_csv("uber.csv")
+
+The shape of the dataset is displayed, and `df.head()` shows the first five records.
+
+**Output:**
+
+* Number of records: 200,000
+* Number of columns: 9
+
+The dataset contains fare amounts, pickup and drop-off coordinates, pickup time, and passenger counts.
+
+### Step 3: Inspecting the Dataset
+
+The notebook uses:
+
+* `df.columns` to display column names.
+* `df.info()` to display data types and non-null counts.
+* `df.isnull().sum()` to count missing values.
+
+Initially, two missing values are found in the drop-off coordinate columns: one in longitude and one in latitude.
+
+This inspection helps us understand the dataset before cleaning it.
+
+### Step 4: Data Preprocessing
+
+The following statement removes records containing missing values:
+
+df.dropna(inplace=True)
+
+The pickup datetime column is converted into datetime format using:
+
+pd.to_datetime(df['pickup_datetime'], errors='coerce')
+
+The `errors='coerce'` parameter converts invalid date values into `NaT`, which represents a missing datetime value.
+
+Those invalid datetime records are then removed.
+
+After this operation, the dataset contains 199,999 records.
+
+**Purpose:** Preprocessing improves data quality and prepares the dataset for further analysis.
+
+### Step 5: Extracting Time Features
+
+The notebook extracts the following information from the pickup datetime:
+
+* `hour`: Hour of pickup.
+* `day`: Day of the month.
+* `month`: Month of the year.
+* `year`: Year of pickup.
+* `day_of_week`: Day of the week, where Monday is 0 and Sunday is 6.
+
+These features may help identify time-related patterns in Uber fares.
+
+After extracting these features, the original `pickup_datetime` and `key` columns are removed because they are not used directly by the models.
+
+### Step 6: Identifying Outliers Using a Boxplot
+
+A boxplot is created using Seaborn to visualize the distribution of fare amounts.
+
+A boxplot displays the median, quartiles, and potential outliers in a dataset.
+
+Points outside the whiskers may indicate unusually low or high fare values.
+
+**Purpose:** The boxplot provides a visual method of identifying potential outliers.
+
+### Step 7: Identifying Outliers Using the IQR Method
+
+The notebook uses the Interquartile Range (IQR) method.
+
+**Q1:** First quartile, representing the 25th percentile.
+
+**Q3:** Third quartile, representing the 75th percentile.
+
+**IQR:** Difference between the third and first quartiles.
+
+Formula:
+
+IQR = Q3 − Q1
+
+The lower and upper outlier limits are calculated as:
+
+Lower Limit = Q1 − 1.5 × IQR
+
+Upper Limit = Q3 + 1.5 × IQR
+
+Any fare below the lower limit or above the upper limit is identified as a potential outlier.
+
+**Output from our notebook:**
+
+* Lower limit: −3.75
+* Upper limit: 22.25
+* Number of identified outliers: 17,166
+
+These are potential outliers according to the IQR rule. The notebook identifies them but does not remove every IQR outlier automatically.
+
+### Step 8: Filtering Invalid Records
+
+The notebook applies practical filters to retain reasonable records:
+
+* Fare amount must be greater than 0 and less than 100.
+* Passenger count must be greater than 0 and at most 6.
+* Pickup and drop-off latitudes must be between 40 and 42.
+* Pickup and drop-off longitudes must be between −75 and −72.
+
+These geographical limits assume that the trips are around the New York City region.
+
+The filters remove invalid fares, unreasonable passenger counts, and coordinates outside the selected geographical area.
+
+**Output:** 195,017 records remain after this filtering step.
+
+Note that this step filters records using domain-based limits; it does not remove every record identified by the IQR method.
+
+### Step 9: Calculating the Distance Between Locations
+
+The pickup and drop-off coordinates are used to calculate the distance travelled.
+
+The notebook defines a function called `haversine()`.
+
+The Haversine formula calculates the great-circle distance between two points on the Earth's surface using their latitude and longitude.
+
+The function performs the following operations:
+
+1. Converts latitude and longitude values from degrees to radians.
+2. Calculates the differences between the coordinates.
+3. Applies the Haversine formula.
+4. Multiplies the result by the Earth's approximate radius of 6,371 kilometres.
+
+The calculated distance is stored in the `distance_km` column.
+
+Records with zero distance are removed because they do not represent a positive geographical distance between the pickup and drop-off points.
+
+**Purpose:** Distance is an important feature for estimating a ride's fare.
+
+### Step 10: Checking Correlation
+
+The notebook calculates the correlation matrix using:
+
+df.select_dtypes(include='number').corr()
+
+A Seaborn heatmap is then created to visualize the correlation between numerical columns.
+
+Correlation measures the strength and direction of the linear relationship between two numerical variables.
+
+Its value ranges from −1 to +1:
+
+* +1: Perfect positive linear correlation.
+* −1: Perfect negative linear correlation.
+* 0: No linear correlation.
+
+A positive correlation means that two variables tend to increase together. A negative correlation means that one tends to decrease as the other increases.
+
+The heatmap helps us examine relationships between fare amount, distance, time features, passenger count, and other numerical columns.
+
+**Important:** Correlation does not prove causation.
+
+### Step 11: Selecting Features and Target
+
+The notebook selects these input features:
+
+* `distance_km`
+* `hour`
+* `day`
+* `month`
+* `year`
+* `day_of_week`
+* `passenger_count`
+
+These features are stored in `X`.
+
+The target variable is `fare_amount`, stored in `y`.
+
+**X:** Independent variables or input features.
+
+**y:** Dependent variable or target to be predicted.
+
+The goal is to train a model that estimates the fare amount using the selected input features.
+
+### Step 12: Splitting the Dataset
+
+The notebook uses `train_test_split()` to divide the dataset into training and testing sets.
+
+The test size is 0.2, meaning 20% of the records are used for testing and the remaining 80% for training.
+
+The `random_state=42` parameter makes the split reproducible.
+
+**Output:**
+
+* Training records: 154,389
+* Testing records: 38,598
+
+The training data is used to learn patterns, while the testing data evaluates how well the trained models predict unseen records.
+
+### Step 13: Implementing Linear Regression
+
+Linear Regression is a supervised machine learning algorithm used to predict continuous numerical values.
+
+It models the relationship between input features and the target using a linear equation.
+
+A simple linear regression equation is:
+
+y = mx + c
+
+For multiple input features, the equation can be represented as:
+
+y = b₀ + b₁x₁ + b₂x₂ + ... + bₙxₙ
+
+Here:
+
+* y is the predicted fare.
+* x values represent input features.
+* b₀ is the intercept.
+* b values represent the learned coefficients.
+
+The notebook creates a `LinearRegression` model, trains it using `fit()`, and predicts fares for the testing data using `predict()`.
+
+The predictions are stored in `y_pred_lr`.
+
+### Step 14: Implementing Random Forest Regression
+
+Random Forest Regression is an ensemble learning algorithm that combines predictions from multiple decision trees.
+
+Each tree learns patterns from the training data, and their predictions are combined to produce the final result.
+
+The notebook uses:
+
+* `n_estimators=100`: Builds 100 decision trees.
+* `random_state=42`: Makes the model's random processes reproducible.
+* `n_jobs=-1`: Allows the model to use available CPU processing resources for parallel execution.
+
+The model is trained using `fit()` and makes predictions using `predict()`.
+
+The predictions are stored in `y_pred_rf`.
+
+Random Forest can learn nonlinear relationships and interactions between features, unlike ordinary Linear Regression, which models a linear relationship.
+
+### Step 15: Evaluating Model Performance
+
+The notebook compares the models using three evaluation metrics.
+
+#### A. R² Score
+
+R² measures how well the model explains the variation in the target variable.
+
+A value closer to 1 generally indicates a better fit.
+
+An R² score of 0.82 indicates that the model explains approximately 82% of the variation in the target values on the evaluated test set.
+
+#### B. Root Mean Squared Error (RMSE)
+
+RMSE measures the typical magnitude of prediction errors while giving greater weight to larger errors.
+
+Formula:
+
+RMSE = √(Mean of squared prediction errors)
+
+A lower RMSE generally indicates better predictive performance.
+
+RMSE is expressed in the same units as the target variable. Since the target is fare amount, RMSE is expressed in fare units.
+
+#### C. Mean Absolute Error (MAE)
+
+MAE calculates the average absolute difference between actual and predicted values.
+
+Formula:
+
+MAE = Mean(|Actual Value − Predicted Value|)
+
+A lower MAE indicates smaller average absolute prediction errors.
+
+The notebook calculates these metrics for both models and displays their results.
+
+### Step 16: Comparing the Models
+
+The evaluation scores are stored in a Pandas DataFrame.
+
+The table displays each model's R² Score, RMSE, and MAE.
+
+A Seaborn barplot is then created to compare the R² scores visually.
+
+This allows us to compare the predictive performance of Linear Regression and Random Forest Regression.
+
+---
+
+## 6. Actual Results From Our Notebook
+
+| Evaluation Metric | Linear Regression | Random Forest Regression |
+| ----------------- | ----------------: | -----------------------: |
+| R² Score          |            0.7631 |                   0.8198 |
+| RMSE              |            4.5434 |                   3.9631 |
+| MAE               |            2.3087 |                   2.1080 |
+
+### Interpretation
+
+Random Forest Regression performs better on our test dataset because:
+
+* Its R² score is higher.
+* Its RMSE is lower.
+* Its MAE is lower.
+
+Therefore, Random Forest Regression is the better-performing model among the two models tested in this practical.
+
+The result applies to this dataset and the selected features; it does not guarantee the same performance on every dataset.
+
+---
+
+## 7. Common Errors and Their Solutions
+
+### Error 1: ModuleNotFoundError
+
+**Example:**
+
+ModuleNotFoundError: No module named 'seaborn'
+
+**Reason:** The required library is not installed in the Python environment being used by Jupyter Notebook.
+
+**Solution:** Open Command Prompt and install the missing library.
+
+For Seaborn:
+
+python -m pip install seaborn
+
+For Pandas:
+
+python -m pip install pandas
+
+For NumPy:
+
+python -m pip install numpy
+
+For Matplotlib:
+
+python -m pip install matplotlib
+
+For Scikit-learn:
+
+python -m pip install scikit-learn
+
+If the error continues, check that Jupyter is using the same Python environment where the library was installed. Restart the notebook kernel after installing the package if necessary.
+
+### Error 2: FileNotFoundError
+
+**Example:**
+
+FileNotFoundError: [Errno 2] No such file or directory: 'uber.csv'
+
+**Reason:** Python cannot find the dataset at the specified location.
+
+**Solution:**
+
+1. Confirm that the file is named `uber.csv`.
+2. Make sure it is inside the notebook's working directory.
+3. Check the folder from which Jupyter Notebook was launched.
+4. Alternatively, provide the correct full file path in `pd.read_csv()`.
+
+For example:
+
+df = pd.read_csv(r"C:\Users\athar\Downloads\Codes\ML\uber.csv")
+
+Replace the example path with the actual location of the dataset.
+
+The `r` before the path makes it a raw string, which helps avoid problems with Windows backslashes.
+
+### Error 3: ParserError or Dataset Loading Error
+
+**Reason:** The CSV file may be corrupted, incorrectly formatted, or different from the expected dataset.
+
+**Solution:**
+
+1. Confirm that the downloaded file is the actual CSV dataset.
+2. Check that it has not been renamed incorrectly, such as `uber.csv.csv`.
+3. If the file was downloaded as a ZIP archive, extract it first.
+4. Open the CSV file to check whether it contains readable comma-separated data.
+
+Do not change the CSV parsing options unless the file genuinely requires it.
+
+### Error 4: KeyError
+
+**Example:**
+
+KeyError: 'pickup_datetime'
+
+**Reason:** The requested column does not exist under that exact name in the loaded DataFrame.
+
+**Solution:**
+
+Run:
+
+print(df.columns)
+
+Check whether the column names match those expected by the notebook. Confirm that the correct Uber dataset has been loaded.
+
+### Error 5: NameError
+
+**Example:**
+
+NameError: name 'df' is not defined
+
+**Reason:** The cell that creates the DataFrame has not been executed in the current kernel session, or the kernel was restarted.
+
+**Solution:** Execute the notebook cells from the beginning in order.
+
+In Jupyter Notebook, select **Kernel → Restart Kernel and Run All Cells** if you want to execute the notebook from the beginning.
+
+Be aware that this reruns the model training cells as well.
+
+### Error 6: Kernel Is Busy or Random Forest Takes Too Long
+
+**Reason:** The dataset contains many records, and Random Forest trains 100 decision trees. This can require considerable processing time.
+
+**Solution:**
+
+* Wait for the cell to finish.
+* Avoid running the same training cell multiple times simultaneously.
+* Close unnecessary applications if the computer has limited memory or processing resources.
+
+If the notebook is genuinely stuck, interrupt the kernel and investigate before restarting.
+
+### Error 7: ValueError During Model Training
+
+**Reason:** Scikit-learn may receive missing, non-numeric, or otherwise invalid input values.
+
+**Solution:**
+
+Check the selected features and target:
+
+print(X.isnull().sum())
+print(y.isnull().sum())
+print(X.dtypes)
+
+Confirm that the selected features are numerical and that the preprocessing cells have executed successfully.
+
+Do not modify the dataset unnecessarily if the notebook is already running correctly.
+
+### Error 8: Heatmap or Plot Does Not Display
+
+**Reason:** The plotting cell may not have executed successfully, or the notebook may not be displaying the figure.
+
+**Solution:**
+
+Run the plotting cell again after its required DataFrame or variables have been created. Check for an error in the preceding cells.
+
+---
+
+## 8. Important Viva Questions and Answers
+
+**Q1. What is the aim of this practical?**
+
+To predict Uber ride fares using Linear Regression and Random Forest Regression and compare their performance.
+
+**Q2. What is supervised learning?**
+
+Supervised learning is a machine learning technique in which a model learns from labelled data containing input features and known target values.
+
+**Q3. What is regression?**
+
+Regression is a supervised learning task used to predict continuous numerical values, such as fare prices.
+
+**Q4. Why is preprocessing necessary?**
+
+Preprocessing improves data quality by handling missing values, converting data types, extracting useful features, and filtering invalid records.
+
+**Q5. What is an outlier?**
+
+An outlier is a data point that differs significantly from the general pattern of the dataset.
+
+**Q6. What is the IQR method?**
+
+The IQR method identifies potential outliers using the range between the first and third quartiles and limits based on 1.5 times the IQR.
+
+**Q7. What is correlation?**
+
+Correlation measures the strength and direction of the relationship between two variables.
+
+**Q8. What is the Haversine formula?**
+
+The Haversine formula calculates the great-circle distance between two points on the Earth's surface using their latitude and longitude.
+
+**Q9. Why do we calculate distance?**
+
+Distance provides information about how far the pickup and drop-off locations are from each other and may help predict the fare.
+
+**Q10. What is Linear Regression?**
+
+Linear Regression predicts a continuous target by modelling a linear relationship between the input features and the target variable.
+
+**Q11. What is Random Forest Regression?**
+
+Random Forest Regression combines predictions from multiple decision trees to estimate a continuous numerical value.
+
+**Q12. What is the difference between Linear Regression and Random Forest Regression?**
+
+Linear Regression models a linear relationship, whereas Random Forest can learn nonlinear patterns and feature interactions.
+
+**Q13. What is the purpose of train-test splitting?**
+
+It separates the data used to train a model from the data used to evaluate its performance on unseen records.
+
+**Q14. Why is `random_state=42` used?**
+
+It makes the random split and relevant randomized operations reproducible, helping us obtain consistent results when rerunning the notebook under the same conditions.
+
+**Q15. What does `test_size=0.2` mean?**
+
+It means that 20% of the available records are allocated to the testing set and 80% to the training set.
+
+**Q16. What is R² Score?**
+
+R² measures how well the model explains the variation in the target variable. A higher value generally indicates better performance.
+
+**Q17. What is RMSE?**
+
+Root Mean Squared Error measures prediction error by taking the square root of the mean squared differences between actual and predicted values.
+
+**Q18. What is MAE?**
+
+Mean Absolute Error measures the average absolute difference between actual and predicted values.
+
+**Q19. Which model performed better in our practical?**
+
+Random Forest Regression performed better because it achieved a higher R² score and lower RMSE and MAE values.
+
+**Q20. Why do we use a heatmap?**
+
+A heatmap provides a visual representation of the correlation matrix, making relationships between numerical variables easier to examine.
+
+**Q21. Why is fare amount the target variable?**
+
+Because fare amount is the value that the model is required to predict.
+
+**Q22. Why are date and time features extracted?**
+
+Pickup time may be associated with changes in fare patterns. Extracting individual time features allows the models to use this information as numerical inputs.
+
+**Q23. What does `n_estimators=100` mean?**
+
+It specifies that the Random Forest model will use 100 decision trees.
+
+**Q24. Why is a boxplot used?**
+
+A boxplot visually summarizes the distribution of a variable and helps identify potential outliers.
+
+**Q25. Why is Random Forest better in our results?**
+
+For our test dataset, Random Forest achieved a higher R² score and lower prediction errors than Linear Regression. This indicates better predictive performance on the evaluated data.
+
+---
+
+## 9. Conclusion
+
+The Uber Fare Prediction practical was implemented successfully using Python and Jupyter Notebook. The dataset was preprocessed, potential outliers were identified using a boxplot and the IQR method, and correlations between numerical variables were examined using a heatmap. Geographical distances were calculated using the Haversine formula. Linear Regression and Random Forest Regression were trained and evaluated using R² Score, RMSE, and MAE. Based on the test results, Random Forest Regression performed better than Linear Regression for this dataset.

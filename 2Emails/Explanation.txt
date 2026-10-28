@@ -1,0 +1,620 @@
+# ML PRACTICAL 2: EMAIL SPAM DETECTION USING KNN AND SVM
+
+## 1. Aim
+
+To classify emails into spam and non-spam categories using binary classification and implement K-Nearest Neighbors (KNN) and Support Vector Machine (SVM). Analyze and compare their performance using classification metrics.
+
+## 2. Problem Statement
+
+Classify emails using binary classification into two states:
+
+* Normal State (0): Not Spam
+* Abnormal State (1): Spam
+
+Implement KNN and SVM classifiers and analyze their performance.
+
+## 3. Software and Libraries Required
+
+* Python 3
+* Jupyter Notebook
+* Pandas
+* NumPy
+* Matplotlib
+* Seaborn
+* Scikit-learn
+
+### Purpose of Libraries
+
+**Pandas:** Loads and processes the email dataset.
+
+**NumPy:** Supports numerical operations.
+
+**Matplotlib:** Creates graphs and visualizations.
+
+**Seaborn:** Creates confusion-matrix heatmaps and comparison graphs.
+
+**Scikit-learn:** Provides data splitting, feature scaling, classification algorithms, and evaluation metrics.
+
+## 4. Dataset Information
+
+Dataset: `emails.csv`
+
+The dataset contains numerical features representing email-word information and a target column named `Prediction`.
+
+The dataset contains:
+
+* Total records: 5,172
+* Total original columns: 3,002
+* Input features after preprocessing: 3,000
+* Target column: `Prediction`
+
+The target column contains two classes:
+
+* 0: Not Spam — 3,672 records
+* 1: Spam — 1,500 records
+
+The `Email No.` column is an identifier and is removed during preprocessing.
+
+After removing this identifier, the dataset contains 3,000 input features and one target column.
+
+## 5. Explanation of the Program
+
+### Step 1: Importing Libraries
+
+The first two cells import the required libraries and functions.
+
+The notebook imports Pandas, NumPy, Matplotlib, Seaborn, and Scikit-learn components.
+
+The following Scikit-learn functions are important:
+
+* `train_test_split()` divides the dataset into training and testing sets.
+* `StandardScaler()` standardizes numerical features.
+* `KNeighborsClassifier()` implements KNN.
+* `SVC()` implements Support Vector Machine.
+* `accuracy_score()` calculates accuracy.
+* `precision_score()` calculates precision.
+* `recall_score()` calculates recall.
+* `f1_score()` calculates the F1 score.
+* `classification_report()` displays classification metrics.
+* `confusion_matrix()` displays classification results in matrix form.
+
+### Step 2: Loading the Dataset
+
+The dataset is loaded using:
+
+`df = pd.read_csv("emails.csv", encoding="ISO-8859-1")`
+
+The `read_csv()` function reads the CSV file into a Pandas DataFrame.
+
+The encoding parameter specifies how the file's text is decoded.
+
+The notebook displays:
+
+* Dataset shape
+* Column names
+* First five records
+
+The initial dataset shape is `(5172, 3002)`.
+
+This means the dataset contains 5,172 rows and 3,002 columns.
+
+### Step 3: Preprocessing the Dataset
+
+The `Email No.` column is removed because it is an identifier rather than an email-content feature.
+
+The `Prediction` column is converted into numerical format using `pd.to_numeric()`.
+
+Records with missing target values are removed, and the target is converted to integer format.
+
+The input features and target are separated:
+
+* `X` contains the input features.
+* `y` contains the target labels.
+
+Missing values in the input features are replaced with zero using `X.fillna(0)`.
+
+After preprocessing:
+
+* Input features: 3,000
+* Target classes: 0 and 1
+* Missing input feature values: 0
+
+**Purpose:** Preprocessing prepares the data for classification.
+
+### Step 4: Splitting the Dataset
+
+The dataset is divided into training and testing sets using `train_test_split()`.
+
+The notebook uses:
+
+* `test_size=0.2`
+* `random_state=42`
+* `stratify=y`
+
+The dataset is divided as follows:
+
+* Training records: 4,137
+* Testing records: 1,035
+
+Approximately 80% of the records are used for training, and 20% are used for testing.
+
+`random_state=42` makes the split reproducible.
+
+`stratify=y` preserves approximately the same proportion of spam and non-spam emails in both sets.
+
+**Purpose:** The training data teaches the models, while the testing data evaluates their performance on unseen records.
+
+### Step 5: Feature Scaling
+
+The notebook uses `StandardScaler()` to standardize the numerical features.
+
+Feature scaling is important because the KNN algorithm uses distances to identify the nearest neighbours. SVM can also be affected by differences in feature scales.
+
+The scaler learns the scaling parameters from the training data and applies the same parameters to the testing data.
+
+The training data is transformed using `fit_transform()`, while the testing data is transformed using `transform()`.
+
+This avoids using information from the test data to calculate the scaling parameters.
+
+**Purpose:** Feature scaling helps KNN and SVM work effectively with numerical features.
+
+### Step 6: Implementing K-Nearest Neighbors (KNN)
+
+K-Nearest Neighbors is a supervised machine learning algorithm used for classification.
+
+It classifies a new data point based on the classes of its nearest training points.
+
+The notebook creates the classifier using:
+
+`KNeighborsClassifier(n_neighbors=5)`
+
+The value `n_neighbors=5` means the algorithm considers the five nearest neighbours.
+
+The model is trained using `fit()` and predicts the classes of the test data using `predict()`.
+
+The predictions are stored in `y_pred_knn`.
+
+The notebook calculates accuracy and displays the classification report and confusion matrix.
+
+**How KNN works:**
+
+1. Select a new email to classify.
+2. Calculate its distances from training emails.
+3. Identify the five nearest neighbours.
+4. Count the class labels of those neighbours.
+5. Assign the class with the majority vote.
+
+If the majority of the selected neighbours belong to the spam class, the email is classified as spam.
+
+### Step 7: Implementing Support Vector Machine (SVM)
+
+Support Vector Machine is a supervised machine learning algorithm used for classification.
+
+It finds a decision boundary that separates different classes.
+
+The notebook uses:
+
+`SVC(kernel="linear", random_state=42)`
+
+The linear kernel specifies that the model uses a linear decision boundary.
+
+The model is trained using `fit()` and predicts the classes of the test emails using `predict()`.
+
+The predictions are stored in `y_pred_svm`.
+
+The notebook then displays the accuracy, classification report, and confusion matrix.
+
+**How SVM works:**
+
+1. Takes the training emails and their class labels.
+2. Learns a decision boundary separating spam and non-spam emails.
+3. Uses the learned boundary to classify test emails.
+4. Evaluates the predictions against the actual labels.
+
+SVM aims to find a separating boundary with a large margin between the classes.
+
+### Step 8: Evaluating the Models
+
+The notebook evaluates both models using four metrics.
+
+#### A. Accuracy
+
+Accuracy measures the proportion of all predictions that are correct.
+
+Formula:
+
+Accuracy = Correct Predictions / Total Predictions
+
+Higher accuracy generally indicates better overall classification performance.
+
+#### B. Precision
+
+Precision measures how many emails predicted as spam are actually spam.
+
+Formula:
+
+Precision = TP / (TP + FP)
+
+High precision means fewer non-spam emails are incorrectly classified as spam.
+
+#### C. Recall
+
+Recall measures how many actual spam emails are correctly identified.
+
+Formula:
+
+Recall = TP / (TP + FN)
+
+High recall means fewer spam emails are missed.
+
+#### D. F1 Score
+
+The F1 score is the harmonic mean of precision and recall.
+
+Formula:
+
+F1 Score = 2 × (Precision × Recall) / (Precision + Recall)
+
+It balances precision and recall in a single metric.
+
+Here:
+
+* TP = True Positive
+* FP = False Positive
+* FN = False Negative
+
+In this practical, the positive class is spam, represented by label 1.
+
+### Step 9: Comparing KNN and SVM
+
+The notebook creates a Pandas DataFrame containing the evaluation results of both models.
+
+The comparison includes:
+
+* Accuracy
+* Precision
+* Recall
+* F1 Score
+
+This table makes it easier to identify which classifier performs better.
+
+A model should not be selected using accuracy alone. Precision, recall, and F1 score are also important, particularly when detecting spam emails.
+
+### Step 10: Visualizing Confusion Matrices
+
+The notebook creates two heatmaps using Seaborn.
+
+One heatmap represents KNN, and the other represents SVM.
+
+The confusion matrix compares actual labels with predicted labels.
+
+The matrix uses the following order:
+
+* First row and column: Not Spam (0)
+* Second row and column: Spam (1)
+
+The four possible outcomes are:
+
+**True Negative (TN):** A non-spam email correctly classified as non-spam.
+
+**False Positive (FP):** A non-spam email incorrectly classified as spam.
+
+**False Negative (FN):** A spam email incorrectly classified as non-spam.
+
+**True Positive (TP):** A spam email correctly classified as spam.
+
+The heatmaps help us understand the types of errors made by each classifier.
+
+### Step 11: Comparing Accuracy Using a Bar Chart
+
+The final cell creates a bar chart comparing the accuracy of KNN and SVM.
+
+The X-axis represents the models, and the Y-axis represents their accuracy.
+
+The chart provides a visual comparison of overall classification performance.
+
+The model with the higher accuracy makes a larger proportion of correct predictions on the test dataset.
+
+However, precision, recall, and F1 score should also be considered before choosing the better spam detection model.
+
+---
+
+## 6. Actual Results From Our Notebook
+
+### KNN Results
+
+* Accuracy: 83.38%
+* Spam Precision: 64%
+* Spam Recall: 96%
+* Spam F1 Score: 77%
+
+Confusion Matrix:
+
+| Actual / Predicted | Not Spam | Spam |
+| ------------------ | -------: | ---: |
+| Not Spam           |      576 |  159 |
+| Spam               |       13 |  287 |
+
+Interpretation:
+
+KNN correctly classifies 576 non-spam emails and 287 spam emails.
+
+However, it incorrectly classifies 159 non-spam emails as spam and misses 13 actual spam emails.
+
+Its spam recall is high, but its spam precision is comparatively low.
+
+### SVM Results
+
+* Accuracy: 95.07%
+* Spam Precision: 91%
+* Spam Recall: 92%
+* Spam F1 Score: 92%
+
+Confusion Matrix:
+
+| Actual / Predicted | Not Spam | Spam |
+| ------------------ | -------: | ---: |
+| Not Spam           |      709 |   26 |
+| Spam               |       25 |  275 |
+
+Interpretation:
+
+SVM correctly classifies 709 non-spam emails and 275 spam emails.
+
+It incorrectly classifies 26 non-spam emails as spam and misses 25 actual spam emails.
+
+Compared with KNN, SVM makes substantially fewer false-positive predictions and achieves better overall classification performance.
+
+### Performance Comparison
+
+| Metric         |    KNN |    SVM |
+| -------------- | -----: | -----: |
+| Accuracy       | 83.38% | 95.07% |
+| Spam Precision |    64% |    91% |
+| Spam Recall    |    96% |    92% |
+| Spam F1 Score  |    77% |    92% |
+
+**Note:** The values in this comparison are rounded. The notebook's detailed classification report contains the exact calculated metrics.
+
+### Which Model Performs Better?
+
+SVM performs better overall on this test dataset.
+
+It achieves higher accuracy, precision, and F1 score than KNN.
+
+KNN achieves higher spam recall, meaning it identifies a larger proportion of the actual spam emails in this particular test set. However, it also incorrectly flags many more non-spam emails as spam.
+
+Therefore, SVM provides a better overall balance of classification performance for this dataset, while KNN demonstrates the trade-off between detecting spam and avoiding false spam alerts.
+
+---
+
+## 7. Common Errors and Their Solutions
+
+### Error 1: ModuleNotFoundError
+
+Example:
+
+`ModuleNotFoundError: No module named 'sklearn'`
+
+**Reason:** A required Python library is not installed in the active environment.
+
+**Solution:** Open Command Prompt and execute:
+
+`python -m pip install pandas numpy matplotlib seaborn scikit-learn`
+
+After installation, restart the notebook kernel if necessary.
+
+If the error continues, check whether Jupyter is using the same Python environment where the libraries were installed.
+
+### Error 2: FileNotFoundError
+
+Example:
+
+`FileNotFoundError: [Errno 2] No such file or directory: 'emails.csv'`
+
+**Reason:** Python cannot find the dataset in the current working directory.
+
+**Solution:**
+
+1. Check that the file is named `emails.csv`.
+2. Place it in the notebook's working directory.
+3. Alternatively, provide the correct full file path.
+
+For example:
+
+`df = pd.read_csv(r"C:\Users\athar\Downloads\Codes\ML\emails.csv", encoding="ISO-8859-1")`
+
+Replace the example path with the actual location of your dataset.
+
+### Error 3: KeyError: 'Prediction'
+
+**Reason:** The dataset does not contain a column named `Prediction`, or the column has a different name.
+
+**Solution:**
+
+Run:
+
+`print(df.columns.tolist())`
+
+Check the column names and make sure the expected dataset has been loaded.
+
+If the target column has a different name, the code must use the correct name.
+
+### Error 4: NameError
+
+Example:
+
+`NameError: name 'X_train_scaled' is not defined`
+
+**Reason:** A required cell has not been executed, or the notebook kernel has restarted.
+
+**Solution:** Execute the notebook cells sequentially from the beginning.
+
+You can also use **Kernel → Restart Kernel and Run All Cells** to execute the notebook from scratch.
+
+### Error 5: ValueError During Training
+
+**Reason:** The input data may contain invalid values, unexpected target labels, or non-numeric features.
+
+**Solution:**
+
+Check the feature types and missing values:
+
+`print(X.dtypes.value_counts())`
+
+`print(X.isnull().sum().sum())`
+
+Check the target distribution:
+
+`print(y.value_counts())`
+
+Ensure that the input features are numerical and the target contains the expected labels 0 and 1.
+
+### Error 6: KNN or SVM Takes Too Long
+
+**Reason:** The dataset contains 3,000 input features, so calculating distances or training SVM may require significant processing time.
+
+**Solution:**
+
+* Wait for the cell to finish.
+* Avoid repeatedly running the same cell while it is executing.
+* Close unnecessary applications if the computer has limited resources.
+* If the kernel is unresponsive, interrupt execution and investigate the issue.
+
+The practical uses a linear SVM, which can take time to train on a dataset with many features.
+
+### Error 7: Cells Run Out of Order
+
+**Reason:** A variable such as `df`, `X`, `y_pred_knn`, or `results` has not been created in the current kernel session.
+
+**Solution:** Run the cells in the correct order, starting with the imports and dataset-loading cells.
+
+---
+
+## 8. Important Viva Questions and Answers
+
+**Q1. What is the aim of this practical?**
+
+To classify emails as spam or non-spam using KNN and SVM and compare their performance.
+
+**Q2. What is binary classification?**
+
+Binary classification is a supervised learning task in which data is assigned to one of two classes.
+
+**Q3. What are the two classes in this practical?**
+
+Class 0 represents non-spam emails, and class 1 represents spam emails.
+
+**Q4. What is KNN?**
+
+K-Nearest Neighbors is a supervised learning algorithm that classifies a data point based on the classes of its nearest training points.
+
+**Q5. What does K represent in KNN?**
+
+K represents the number of nearest neighbours considered during classification.
+
+**Q6. What value of K is used in our practical?**
+
+The value of K is 5.
+
+**Q7. What is SVM?**
+
+Support Vector Machine is a supervised learning algorithm that finds a decision boundary to separate different classes.
+
+**Q8. What is a kernel in SVM?**
+
+A kernel determines how SVM models the decision boundary. Our practical uses a linear kernel.
+
+**Q9. Why is feature scaling necessary?**
+
+Feature scaling brings numerical features to comparable scales. It is especially important for distance-based KNN and can also improve SVM performance.
+
+**Q10. Why do we divide the dataset into training and testing sets?**
+
+The training set is used to train the model, while the testing set evaluates its performance on unseen data.
+
+**Q11. What does `test_size=0.2` mean?**
+
+It means that 20% of the records are used for testing and approximately 80% for training.
+
+**Q12. What is the purpose of `stratify=y`?**
+
+It preserves approximately the same class proportions in the training and testing sets.
+
+**Q13. What is accuracy?**
+
+Accuracy is the proportion of total predictions that are correct.
+
+**Q14. What is precision?**
+
+Precision measures the proportion of emails predicted as spam that are actually spam.
+
+**Q15. What is recall?**
+
+Recall measures the proportion of actual spam emails that are correctly identified.
+
+**Q16. What is the F1 score?**
+
+The F1 score is the harmonic mean of precision and recall.
+
+**Q17. What is a confusion matrix?**
+
+A confusion matrix compares actual class labels with predicted class labels and displays correct and incorrect predictions.
+
+**Q18. What is a false positive in spam detection?**
+
+A false positive occurs when a non-spam email is incorrectly classified as spam.
+
+**Q19. What is a false negative in spam detection?**
+
+A false negative occurs when an actual spam email is incorrectly classified as non-spam.
+
+**Q20. Which model performs better in our practical?**
+
+SVM performs better overall, achieving approximately 95.07% accuracy compared with KNN's 83.38%.
+
+**Q21. Why is SVM better in our results?**
+
+SVM achieves higher accuracy, precision, and F1 score, and it produces fewer false-positive predictions than KNN.
+
+**Q22. Does KNN perform better in any metric?**
+
+Yes. KNN achieves higher spam recall in our test results, approximately 96%, compared with SVM's 92%.
+
+**Q23. Why is precision important in spam detection?**
+
+High precision reduces the number of legitimate emails incorrectly classified as spam.
+
+**Q24. Why is recall important in spam detection?**
+
+High recall helps identify more of the actual spam emails.
+
+**Q25. What is the difference between KNN and SVM?**
+
+KNN classifies data using nearby training examples, whereas SVM learns a decision boundary that separates the classes.
+
+**Q26. Why do we use a heatmap?**
+
+A heatmap visually represents the confusion matrix and makes classification errors easier to understand.
+
+**Q27. What is the purpose of `random_state=42`?**
+
+It makes the relevant randomized operations reproducible.
+
+**Q28. What is the target column in our dataset?**
+
+The target column is `Prediction`.
+
+**Q29. How many records are used for testing?**
+
+The testing set contains 1,035 records.
+
+**Q30. Why do we compare multiple evaluation metrics?**
+
+Accuracy alone may not reveal the types of classification errors. Precision, recall, and F1 score provide a more complete evaluation.
+
+---
+
+## 9. Conclusion
+
+The Email Spam Detection practical was implemented successfully using Python and Jupyter Notebook. The dataset was preprocessed, divided into training and testing sets, and standardized using feature scaling. KNN and SVM classifiers were trained and evaluated using accuracy, precision, recall, F1 score, and confusion matrices. The results showed that SVM achieved better overall classification performance, with approximately 95.07% accuracy compared with KNN's 83.38%. Although KNN achieved higher spam recall, SVM provided a better overall balance of classification metrics for the given dataset.

@@ -1,0 +1,490 @@
+# Machine Learning Practical: K-Nearest Neighbors (KNN)
+
+## 1. Aim
+
+To implement the K-Nearest Neighbors (KNN) algorithm on the `diabetes.csv` dataset and calculate the confusion matrix, accuracy, error rate, precision, and recall.
+
+## 2. Problem Statement
+
+Implement the K-Nearest Neighbors algorithm on the diabetes dataset to predict whether a person has diabetes. Evaluate the model using the confusion matrix, accuracy, error rate, precision, and recall.
+
+## 3. Theory
+
+### What is K-Nearest Neighbors?
+
+K-Nearest Neighbors (KNN) is a supervised machine learning algorithm used for classification and regression. In this practical, it is used for classification.
+
+KNN predicts the class of a new data point by finding its K nearest data points in the training dataset. The majority class among those neighbors determines the prediction.
+
+For example, if K = 5 and three neighbors belong to class 0 while two belong to class 1, KNN predicts class 0.
+
+### How KNN works
+
+1. Select the value of K.
+2. Calculate the distances between the test sample and training samples.
+3. Identify the K nearest neighbors.
+4. Count the classes of those neighbors.
+5. Assign the majority class as the prediction.
+
+### Euclidean Distance
+
+KNN commonly uses Euclidean distance to measure the distance between two data points.
+
+Distance between points \(X\) and \(Y\):
+
+$$
+d(X,Y)=\sqrt{\sum_{i=1}^{n}(X_i-Y_i)^2}
+$$
+
+A smaller distance indicates that two data points are closer.
+
+### Why did we choose K = 5?
+
+We used `KNeighborsClassifier(n_neighbors=5)`. This means the model considers the five nearest training samples when classifying a test sample.
+
+## 4. Dataset Description
+
+The dataset contains information related to diabetes.
+
+* Total records: **768**
+* Total columns: **9**
+* Input features: **8**
+* Target column: `Outcome`
+* Missing values: **0**, according to the notebook's missing-value check.
+
+### Dataset columns
+
+| Column        | Description                |
+| ------------- | -------------------------- |
+| Pregnancies   | Number of pregnancies      |
+| Glucose       | Glucose concentration      |
+| BloodPressure | Blood pressure measurement |
+| SkinThickness | Skin thickness measurement |
+| Insulin       | Insulin measurement        |
+| BMI           | Body Mass Index            |
+| Pedigree      | Diabetes pedigree function |
+| Age           | Age of the person          |
+| Outcome       | Target class: 0 or 1       |
+
+**Target values:**
+
+* `0` – No diabetes
+* `1` – Diabetes
+
+## 5. Libraries Used
+
+| Library / Function      | Purpose                                           |
+| ----------------------- | ------------------------------------------------- |
+| Pandas                  | Loads and handles the dataset                     |
+| NumPy                   | Provides numerical operations                     |
+| Matplotlib              | Displays plots                                    |
+| Seaborn                 | Creates the confusion matrix heatmap              |
+| `train_test_split`      | Divides data into training and testing sets       |
+| `StandardScaler`        | Standardizes input features                       |
+| `KNeighborsClassifier`  | Implements the KNN algorithm                      |
+| `confusion_matrix`      | Calculates the confusion matrix                   |
+| `accuracy_score`        | Calculates accuracy                               |
+| `precision_score`       | Calculates precision                              |
+| `recall_score`          | Calculates recall                                 |
+| `classification_report` | Displays precision, recall, F1-score, and support |
+
+## 6. Code Explanation
+
+### Step 1: Import libraries
+
+We import Pandas, NumPy, Matplotlib, Seaborn, and the required Scikit-learn functions.
+
+These libraries help us load data, preprocess it, train the model, evaluate predictions, and visualize the results.
+
+### Step 2: Load the dataset
+
+```python
+df = pd.read_csv("diabetes.csv")
+```
+
+This loads the CSV file into a Pandas DataFrame.
+
+We use `df.head()` to display the first five records, `df.shape` to check the dataset size, `df.columns` to view column names, and `df.isnull().sum()` to check for missing values.
+
+### Step 3: Separate features and target
+
+```python
+X = df.drop("Outcome", axis=1)
+y = df["Outcome"]
+```
+
+* `X` contains the eight input features.
+* `y` contains the target variable, `Outcome`.
+
+We remove `Outcome` from the input features because it is the value we want the model to predict.
+
+Output:
+
+```text
+Features shape: (768, 8)
+Target shape: (768,)
+```
+
+### Step 4: Split the dataset
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+```
+
+We divide the dataset into training and testing sets.
+
+* 80% is used for training.
+* 20% is used for testing.
+* `random_state=42` makes the split reproducible.
+* `stratify=y` helps preserve the class proportions in both sets.
+
+Actual output:
+
+```text
+Training data: (614, 8)
+Testing data: (154, 8)
+```
+
+The model learns from 614 records and is evaluated on 154 records.
+
+### Step 5: Feature scaling
+
+```python
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+```
+
+The dataset features have different scales. For example, glucose values and the diabetes pedigree function have different numerical ranges.
+
+Since KNN relies on distance calculations, features with larger scales could otherwise have an excessive influence.
+
+`StandardScaler` standardizes the features using the training data's mean and standard deviation.
+
+We use `fit_transform()` on training data and only `transform()` on testing data to avoid using test-set statistics during training.
+
+### Step 6: Create and train the KNN model
+
+```python
+knn = KNeighborsClassifier(n_neighbors=5)
+
+knn.fit(X_train_scaled, y_train)
+```
+
+* `KNeighborsClassifier` creates a KNN classification model.
+* `n_neighbors=5` sets K to five.
+* `fit()` trains the model using the scaled training features and their known outcomes.
+
+### Step 7: Make predictions
+
+```python
+y_pred = knn.predict(X_test_scaled)
+```
+
+The trained model predicts the outcomes for the test dataset.
+
+* `y_test` contains the actual outcomes.
+* `y_pred` contains the predicted outcomes.
+
+We compare these values to evaluate the model's performance.
+
+### Step 8: Calculate evaluation metrics
+
+```python
+cm = confusion_matrix(y_test, y_pred)
+
+accuracy = accuracy_score(y_test, y_pred)
+error_rate = 1 - accuracy
+precision = precision_score(y_test, y_pred, zero_division=0)
+recall = recall_score(y_test, y_pred, zero_division=0)
+```
+
+This calculates the confusion matrix and the four required metrics.
+
+The precision and recall functions calculate the scores for the positive class, which is `Outcome = 1` (Diabetes).
+
+### Step 9: Visualize the confusion matrix
+
+We use Seaborn's `heatmap()` function to display the confusion matrix.
+
+* `annot=True` displays the values inside the cells.
+* `fmt="d"` displays the values as integers.
+* `cmap="Blues"` selects a blue color scheme.
+* The axis labels identify the actual and predicted classes.
+
+The heatmap makes it easier to identify correct and incorrect predictions.
+
+### Step 10: Display the classification report
+
+```python
+print(classification_report(
+    y_test,
+    y_pred,
+    target_names=["No Diabetes", "Diabetes"],
+    zero_division=0
+))
+```
+
+The classification report provides precision, recall, F1-score, and support for both classes, along with overall accuracy and averaged metrics.
+
+## 7. Actual Output and Result Analysis
+
+### Confusion Matrix
+
+Your notebook produced:
+
+```text
+[[80 20]
+ [26 28]]
+```
+
+The matrix is arranged as follows:
+
+| Actual / Predicted | No Diabetes (0) | Diabetes (1) |
+| ------------------ | --------------: | -----------: |
+| No Diabetes (0)    |              80 |           20 |
+| Diabetes (1)       |              26 |           28 |
+
+For the positive class, `Diabetes = 1`:
+
+* **True Negative (TN) = 80:** Correctly predicted no diabetes.
+* **False Positive (FP) = 20:** Predicted diabetes when the actual class was no diabetes.
+* **False Negative (FN) = 26:** Predicted no diabetes when the actual class was diabetes.
+* **True Positive (TP) = 28:** Correctly predicted diabetes.
+
+### A. Accuracy
+
+Accuracy measures the proportion of all predictions that are correct.
+
+$$
+Accuracy=\frac{TP+TN}{TP+TN+FP+FN}
+$$
+
+$$
+=\frac{28+80}{28+80+20+26}
+=\frac{108}{154}
+$$
+
+**Accuracy = 0.7013 = 70.13%**
+
+This means the model correctly classified approximately 70.13% of the test records.
+
+### B. Error Rate
+
+Error rate measures the proportion of predictions that are incorrect.
+
+$$
+Error\ Rate=1-Accuracy
+$$
+
+$$
+=1-0.7013
+$$
+
+**Error Rate = 0.2987 = 29.87%**
+
+Approximately 29.87% of the test predictions were incorrect.
+
+### C. Precision
+
+Precision measures how many of the samples predicted as diabetes actually belong to the diabetes class.
+
+$$
+Precision=\frac{TP}{TP+FP}
+$$
+
+$$
+=\frac{28}{28+20}
+=\frac{28}{48}
+$$
+
+**Precision = 0.5833 = 58.33%**
+
+Of the records predicted as diabetes, approximately 58.33% actually belonged to that class.
+
+### D. Recall
+
+Recall measures how many actual diabetes cases were correctly identified.
+
+$$
+Recall=\frac{TP}{TP+FN}
+$$
+
+$$
+=\frac{28}{28+26}
+=\frac{28}{54}
+$$
+
+**Recall = 0.5185 = 51.85%**
+
+The model identified approximately 51.85% of the actual diabetes cases in the test set.
+
+### Summary of Results
+
+| Metric           |          Actual Result |
+| ---------------- | ---------------------: |
+| Confusion Matrix | `[[80, 20], [26, 28]]` |
+| Accuracy         |                 70.13% |
+| Error Rate       |                 29.87% |
+| Precision        |                 58.33% |
+| Recall           |                 51.85% |
+
+### Classification Report
+
+Your notebook also produced:
+
+| Class            | Precision | Recall | F1-score | Support |
+| ---------------- | --------: | -----: | -------: | ------: |
+| No Diabetes      |      0.75 |   0.80 |     0.78 |     100 |
+| Diabetes         |      0.58 |   0.52 |     0.55 |      54 |
+| Accuracy         |         — |      — |     0.70 |     154 |
+| Macro Average    |      0.67 |   0.66 |     0.66 |     154 |
+| Weighted Average |      0.69 |   0.70 |     0.70 |     154 |
+
+The model identifies the No Diabetes class more effectively than the Diabetes class. In particular, its recall for diabetes is approximately 52%, meaning it misses a substantial proportion of actual diabetes cases.
+
+**Important:** This is a machine learning practical result, not a medical diagnosis tool.
+
+## 8. Common Errors and Solutions
+
+### Error 1: FileNotFoundError
+
+**Cause:** Python cannot locate `diabetes.csv`.
+
+**Solution:** Keep the CSV file in the notebook's working directory or provide the correct file path.
+
+### Error 2: KeyError: 'Outcome'
+
+**Cause:** The target column name does not match the name in the code.
+
+**Solution:** Run:
+
+```python
+print(df.columns)
+```
+
+Check the exact column name and update the code if necessary. In your dataset, the correct column is `Outcome`.
+
+### Error 3: NameError: name 'df' is not defined
+
+**Cause:** The cell that loads the dataset has not been executed, or the kernel was restarted.
+
+**Solution:** Run the notebook cells again in order, starting with the imports and dataset-loading cell.
+
+### Error 4: KNN gives unexpected results
+
+**Possible cause:** The features have different numerical scales.
+
+**Solution:** Apply `StandardScaler` to the training and testing features as done in this practical.
+
+### Error 5: Confusion matrix values appear in an unexpected order
+
+**Cause:** The matrix rows and columns represent actual and predicted classes, respectively.
+
+**Solution:** Check the class labels and axis labels. In this practical, class `0` is No Diabetes and class `1` is Diabetes.
+
+## 9. Advantages of KNN
+
+1. Simple to understand and implement.
+2. Does not require a complex training process.
+3. Can be used for classification and regression.
+4. Can model nonlinear decision boundaries.
+
+## 10. Limitations of KNN
+
+1. Prediction can be slow on large datasets because distances must be calculated.
+2. Performance depends on the choice of K.
+3. Sensitive to feature scaling.
+4. Can be affected by irrelevant features and noisy data.
+5. May perform poorly when classes overlap or features do not clearly separate them.
+
+## 11. Viva Questions and Answers
+
+**Q1. What is KNN?**
+KNN is a supervised machine learning algorithm that classifies a data point using the classes of its nearest neighbors.
+
+**Q2. What does K represent in KNN?**
+K represents the number of nearest neighbors considered when making a prediction.
+
+**Q3. What value of K did we use?**
+We used K = 5.
+
+**Q4. Why is KNN called a lazy learning algorithm?**
+It stores the training data and performs most of its computation when making predictions rather than learning an explicit model during training.
+
+**Q5. What type of problem is this practical solving?**
+It is a binary classification problem.
+
+**Q6. What is the target column?**
+The target column is `Outcome`.
+
+**Q7. What do 0 and 1 represent in Outcome?**
+0 represents No Diabetes, and 1 represents Diabetes.
+
+**Q8. Why do we split the dataset?**
+To train the model on one portion and evaluate its performance on unseen records.
+
+**Q9. Why do we use feature scaling?**
+KNN uses distances, so scaling prevents features with large numerical ranges from dominating the distance calculations.
+
+**Q10. What is Euclidean distance?**
+It measures the straight-line distance between two points in a feature space.
+
+**Q11. What is a confusion matrix?**
+It is a table that compares actual classes with predicted classes.
+
+**Q12. What is a true positive?**
+A true positive is a diabetes case correctly predicted as diabetes.
+
+**Q13. What is a true negative?**
+A true negative is a no-diabetes case correctly predicted as no diabetes.
+
+**Q14. What is a false positive?**
+A false positive occurs when the model predicts diabetes for a person whose actual class is no diabetes.
+
+**Q15. What is a false negative?**
+A false negative occurs when the model predicts no diabetes for a person whose actual class is diabetes.
+
+**Q16. What is accuracy?**
+Accuracy is the proportion of all predictions that are correct.
+
+**Q17. What is the error rate?**
+Error rate is the proportion of all predictions that are incorrect. It equals 1 minus accuracy.
+
+**Q18. What is precision?**
+Precision measures how many positive predictions are actually positive.
+
+**Q19. What is recall?**
+Recall measures how many actual positive cases are correctly identified.
+
+**Q20. What is the purpose of `train_test_split()`?**
+It divides the dataset into training and testing portions.
+
+**Q21. What does `random_state=42` do?**
+It makes the random data split reproducible.
+
+**Q22. What does `stratify=y` do?**
+It helps preserve the target-class proportions in the training and testing sets.
+
+**Q23. Why did we use `classification_report()`?**
+It displays precision, recall, F1-score, and support for each class.
+
+**Q24. What is an F1-score?**
+It is the harmonic mean of precision and recall.
+
+**Q25. What are the limitations of KNN?**
+It can be computationally expensive at prediction time, is sensitive to feature scaling, and depends on the choice of K.
+
+## 12. Conclusion
+
+The K-Nearest Neighbors algorithm was successfully implemented on the diabetes dataset. The dataset was divided into training and testing sets, and feature scaling was applied before training the classifier.
+
+The model achieved **70.13% accuracy**, with an error rate of **29.87%**, precision of **58.33%**, and recall of **51.85%** for the diabetes class. The confusion matrix and classification report were used to evaluate its performance.
+
+Thus, the practical demonstrates how KNN can be applied to a binary classification problem and evaluated using standard classification metrics.

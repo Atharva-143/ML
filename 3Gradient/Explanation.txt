@@ -1,0 +1,300 @@
+# ML PRACTICAL: GRADIENT DESCENT ALGORITHM
+
+## 1. Aim
+
+To implement the Gradient Descent Algorithm to find the local minimum of the function y = (x + 3)², starting from the point x = 2.
+
+## 2. Problem Statement
+
+Implement the Gradient Descent Algorithm to find the minimum of the given function:
+
+y = (x + 3)²
+
+Starting point: x = 2
+
+The algorithm repeatedly updates the value of x to minimize the function value.
+
+## 3. Software and Libraries Required
+
+* Python 3
+* Jupyter Notebook
+* NumPy
+* Matplotlib
+
+### Purpose of Libraries
+
+**NumPy:** Used for numerical calculations and generating values for plotting the function.
+
+**Matplotlib:** Used to plot the function and visualize the Gradient Descent path.
+
+## 4. Explanation of the Program
+
+### Step 1: Importing Libraries
+
+The first cell imports NumPy and Matplotlib.
+
+NumPy is used to generate numerical values, while Matplotlib is used to visualize the function and the optimization process.
+
+### Step 2: Defining the Function and Its Derivative
+
+The given function is:
+
+y = (x + 3)²
+
+The program defines two functions:
+
+* `f(x)` calculates the function value.
+* `grad_f(x)` calculates the derivative of the function.
+
+The derivative is calculated mathematically as:
+
+dy/dx = 2(x + 3)
+
+The derivative indicates the slope of the function at a particular value of x.
+
+Gradient Descent uses this derivative to determine how to update x to reduce the function value.
+
+### Step 3: Initializing Parameters
+
+The program initializes the following parameters:
+
+* `x_current = 2`: Starting point.
+* `learning_rate = 0.1`: Controls the size of each update.
+* `tolerance = 1e-6`: Defines the convergence threshold.
+* `max_iterations = 100`: Sets the maximum number of iterations.
+* `history = [x_current]`: Stores the values of x visited during optimization.
+
+The initial function value is:
+
+y = (2 + 3)² = 25
+
+Therefore, the algorithm starts at x = 2, where the function value is 25.
+
+### Step 4: Implementing Gradient Descent
+
+The program repeatedly calculates the derivative and updates the current value of x.
+
+The Gradient Descent update formula is:
+
+x_new = x_current − learning_rate × gradient
+
+Here:
+
+* `x_current` is the current value.
+* `learning_rate` determines the step size.
+* `gradient` is the derivative at the current point.
+* `x_new` is the updated value.
+
+The algorithm follows these steps:
+
+1. Calculate the gradient at the current value of x.
+2. Calculate the new value using the update formula.
+3. Store the new value in the history list.
+4. Check whether the change between successive values is smaller than the tolerance.
+5. Stop if the convergence condition is satisfied; otherwise, continue.
+
+#### First Iteration
+
+Starting value:
+
+x = 2
+
+Calculate the gradient:
+
+gradient = 2(x + 3)
+
+gradient = 2(2 + 3) = 10
+
+Apply the update formula:
+
+x_new = 2 − (0.1 × 10)
+
+x_new = 1
+
+Calculate the new function value:
+
+y = (1 + 3)² = 16
+
+The function value decreases from 25 to 16.
+
+The algorithm continues updating x, moving closer to the minimum.
+
+### Step 5: Displaying the Final Result
+
+After the convergence condition is satisfied, the program displays the final value of x and the corresponding function value.
+
+The actual output is approximately:
+
+* Local minimum at x = −2.999996
+* Minimum function value y = 0.0
+* Convergence after 63 iterations
+
+The slight difference between −2.999996 and −3 occurs because Gradient Descent uses iterative numerical updates and a specified tolerance.
+
+### Step 6: Plotting the Function
+
+The final cell plots the function and the Gradient Descent path.
+
+The program generates values of x using NumPy and calculates their corresponding function values.
+
+Matplotlib displays:
+
+* The curve representing y = (x + 3)².
+* The red points representing successive Gradient Descent updates.
+* The direction in which the algorithm moves toward the minimum.
+
+The graph shows that the algorithm starts at x = 2 and moves toward x = −3, where the function reaches its minimum.
+
+## 5. Understanding the Minimum Mathematically
+
+The given function is:
+
+y = (x + 3)²
+
+Since a square cannot be negative, the minimum possible value of the function is zero.
+
+This occurs when:
+
+x + 3 = 0
+
+Therefore:
+
+x = −3
+
+Substituting x = −3 into the function:
+
+y = (−3 + 3)² = 0
+
+Hence, the theoretical minimum is:
+
+x = −3, y = 0
+
+The function is a convex parabola, so this point is both its local minimum and its global minimum.
+
+The Gradient Descent algorithm successfully approaches this point.
+
+## 6. Common Errors and Solutions
+
+### Error 1: ModuleNotFoundError
+
+Example:
+
+`ModuleNotFoundError: No module named 'numpy'`
+
+**Reason:** The required library is not installed in the active Python environment.
+
+**Solution:** Open Command Prompt and execute:
+
+`python -m pip install numpy matplotlib`
+
+Restart the notebook kernel if necessary.
+
+### Error 2: NameError
+
+Example:
+
+`NameError: name 'f' is not defined`
+
+**Reason:** The cell defining the function has not been executed, or the kernel has restarted.
+
+**Solution:** Execute the notebook cells sequentially, starting from the import cell.
+
+### Error 3: Algorithm Does Not Converge
+
+**Reason:** The learning rate may be too large, or the maximum number of iterations may be insufficient.
+
+**Solution:** Reduce the learning rate or increase the maximum number of iterations.
+
+For this practical, the learning rate is 0.1 and the maximum number of iterations is 100.
+
+### Error 4: Minimum Is Not Reached Exactly
+
+**Reason:** Gradient Descent approaches the minimum through repeated numerical updates.
+
+**Solution:** Use an appropriate convergence tolerance and sufficient iterations. The calculated answer may be an approximation of the theoretical minimum.
+
+## 7. Important Viva Questions and Answers
+
+**Q1. What is Gradient Descent?**
+
+Gradient Descent is an optimization algorithm that minimizes a function by repeatedly updating its variables in the direction opposite to the gradient.
+
+**Q2. What is the aim of this practical?**
+
+To implement Gradient Descent to find the minimum of y = (x + 3)², starting from x = 2.
+
+**Q3. What is the derivative of the given function?**
+
+For y = (x + 3)², the derivative is dy/dx = 2(x + 3).
+
+**Q4. What is the Gradient Descent update formula?**
+
+x_new = x_current − learning_rate × gradient.
+
+**Q5. What is the learning rate?**
+
+The learning rate controls the size of each update made by the algorithm.
+
+**Q6. What happens if the learning rate is too large?**
+
+The algorithm may overshoot the minimum or fail to converge.
+
+**Q7. What happens if the learning rate is too small?**
+
+The algorithm may converge very slowly.
+
+**Q8. What is the starting point in our practical?**
+
+The starting point is x = 2.
+
+**Q9. What is the initial function value?**
+
+The initial function value is y = (2 + 3)² = 25.
+
+**Q10. What is the theoretical minimum of the function?**
+
+The theoretical minimum occurs at x = −3, where y = 0.
+
+**Q11. What is the purpose of the tolerance parameter?**
+
+Tolerance defines the threshold used to determine when successive updates are sufficiently small for the algorithm to stop.
+
+**Q12. What is the purpose of max_iterations?**
+
+It limits the maximum number of iterations performed by the algorithm.
+
+**Q13. What is the purpose of the history list?**
+
+It stores the successive values of x so that the optimization path can be plotted.
+
+**Q14. Why do we use the derivative?**
+
+The derivative provides the slope of the function and helps determine the direction in which x should be updated to reduce the function value.
+
+**Q15. What is a local minimum?**
+
+A local minimum is a point where the function value is no greater than the values at nearby points.
+
+**Q16. What is the difference between a local minimum and a global minimum?**
+
+A local minimum is the lowest value within a nearby region, whereas a global minimum is the lowest value over the entire domain.
+
+**Q17. What is the result of our practical?**
+
+The algorithm converges after 63 iterations to approximately x = −2.999996, with a function value close to zero.
+
+**Q18. Why is the calculated minimum not exactly −3?**
+
+The algorithm uses iterative numerical updates and stops when the convergence tolerance is satisfied.
+
+**Q19. Which libraries are used in this practical?**
+
+NumPy and Matplotlib.
+
+**Q20. Why is the graph plotted?**
+
+The graph visualizes the function and shows how successive Gradient Descent updates approach the minimum.
+
+## 8. Conclusion
+
+The Gradient Descent Algorithm was implemented successfully using Python. The function y = (x + 3)² was minimized starting from x = 2, using a learning rate of 0.1 and a convergence tolerance of 1e-6. The algorithm converged after 63 iterations to approximately x = −2.999996, with a function value close to zero. The plotted graph illustrates how Gradient Descent approaches the theoretical minimum at x = −3, where y = 0.

@@ -1,0 +1,614 @@
+# Machine Learning Practical: K-Means and Hierarchical Clustering
+
+## 1. Aim
+
+To implement K-Means and Hierarchical Clustering on the `sales_data_sample.csv` dataset and determine a suitable number of clusters using the Elbow Method.
+
+## 2. Problem Statement
+
+Implement K-Means and Hierarchical Clustering on the sales dataset. Determine the number of clusters using the Elbow Method and visualize the clustering results.
+
+## 3. Theory
+
+### What is Clustering?
+
+Clustering is an unsupervised machine learning technique that groups similar data points into clusters.
+
+Data points within the same cluster are generally more similar to each other than to data points in other clusters.
+
+Clustering does not require predefined target labels.
+
+In this practical, we group sales records using their numerical features to identify patterns in the data.
+
+### What is K-Means Clustering?
+
+K-Means is an unsupervised machine learning algorithm that divides data into K clusters.
+
+Each cluster is represented by a centroid, which is the mean position of the points belonging to that cluster.
+
+**Working of K-Means:**
+
+1. Choose the number of clusters, K.
+2. Initialize K cluster centroids.
+3. Assign each data point to its nearest centroid.
+4. Recalculate the centroids based on the assigned points.
+5. Repeat the assignment and centroid calculation steps until the clusters stabilize or the algorithm reaches its stopping condition.
+
+In this practical, we use K = 3, so the algorithm creates three clusters.
+
+### What is Hierarchical Clustering?
+
+Hierarchical Clustering creates a hierarchy of clusters based on the similarity or distance between data points.
+
+We use **Agglomerative Hierarchical Clustering**, which follows a bottom-up approach.
+
+**Working of Hierarchical Clustering:**
+
+1. Initially, treat every data point as a separate cluster.
+2. Calculate the distances between clusters.
+3. Merge the closest clusters.
+4. Repeat the merging process until the desired number of clusters remains.
+
+In this practical, we use three clusters and Ward linkage.
+
+### What is the Elbow Method?
+
+The Elbow Method helps estimate a suitable number of clusters for K-Means.
+
+It calculates the Within-Cluster Sum of Squares (WCSS), also known as inertia, for different values of K.
+
+WCSS measures the sum of squared distances between data points and their assigned cluster centroids.
+
+$$
+WCSS=\sum_{i=1}^{K}\sum_{x\in C_i}
+\|x-\mu_i\|^2
+$$
+
+Where:
+
+* K = Number of clusters.
+* \(C_i\) = Data points belonging to cluster i.
+* \(\mu_i\) = Centroid of cluster i.
+* \(x\) = A data point.
+
+As K increases, WCSS generally decreases. We look for an elbow in the graph where the improvement begins to slow down.
+
+This point suggests a suitable number of clusters.
+
+## 4. Dataset Description
+
+The dataset is named `sales_data_sample.csv`.
+
+It contains sales order information, including order quantities, prices, sales amounts, product details, and customer information.
+
+### Dataset details
+
+| Property                    | Value                   |
+| --------------------------- | ----------------------- |
+| Dataset name                | `sales_data_sample.csv` |
+| Total records               | 2,823                   |
+| Total columns               | 25                      |
+| Selected numerical features | 4                       |
+| Records used for clustering | 2,823                   |
+| Number of clusters selected | 3                       |
+
+### Features used
+
+We selected the following four numerical columns:
+
+| Feature           | Description                           |
+| ----------------- | ------------------------------------- |
+| `QUANTITYORDERED` | Number of items ordered               |
+| `PRICEEACH`       | Price per item                        |
+| `SALES`           | Sales amount for the order line       |
+| `MSRP`            | Manufacturer's suggested retail price |
+
+These features allow the clustering algorithms to group sales records according to order quantities, prices, and sales amounts.
+
+## 5. Libraries Used
+
+| Library / Function        | Purpose                                  |
+| ------------------------- | ---------------------------------------- |
+| Pandas                    | Loads and processes the dataset          |
+| NumPy                     | Supports numerical operations            |
+| Matplotlib                | Creates graphs and scatter plots         |
+| Seaborn                   | Provides visualization functionality     |
+| `StandardScaler`          | Standardizes numerical features          |
+| `KMeans`                  | Implements K-Means clustering            |
+| `AgglomerativeClustering` | Implements hierarchical clustering       |
+| `linkage`                 | Calculates hierarchical cluster linkages |
+| `dendrogram`              | Visualizes hierarchical cluster merging  |
+
+## 6. Code Explanation
+
+### Step 1: Import libraries
+
+We import the libraries required for data handling, feature scaling, clustering, and visualization.
+
+Pandas processes the dataset, Matplotlib creates graphs, and Scikit-learn provides the clustering algorithms.
+
+The SciPy functions `linkage()` and `dendrogram()` are used to construct and visualize a hierarchical clustering tree.
+
+### Step 2: Load the dataset
+
+```python
+df = pd.read_csv("sales_data_sample.csv", encoding="latin1")
+```
+
+This loads the CSV file into a Pandas DataFrame.
+
+The `latin1` encoding helps read text containing characters that might not be handled correctly by the default encoding.
+
+We use:
+
+* `df.head()` to display the first five rows.
+* `df.shape` to check the dataset dimensions.
+* `df.columns.tolist()` to display the column names.
+* `df.isnull().sum()` to count missing values in each column.
+
+Actual dataset shape:
+
+```text
+(2823, 25)
+```
+
+The dataset has 2,823 rows and 25 columns.
+
+### Step 3: Select numerical features
+
+```python
+candidate_features = [
+    "QUANTITYORDERED",
+    "PRICEEACH",
+    "SALES",
+    "MSRP"
+]
+
+features = [col for col in candidate_features if col in df.columns]
+
+X = df[features].copy()
+```
+
+Clustering requires numerical input for the algorithms used in this practical.
+
+We select four columns relevant to sales analysis and store them in `X`.
+
+The `.copy()` method creates a separate DataFrame containing the selected features.
+
+Actual selected columns:
+
+```text
+['QUANTITYORDERED', 'PRICEEACH', 'SALES', 'MSRP']
+```
+
+The selected feature matrix has four columns.
+
+### Step 4: Handle missing values
+
+```python
+X = X.dropna()
+```
+
+The `dropna()` function removes rows containing missing values in the selected features.
+
+The original dataset contains missing values in some other columns, but the four selected features have no missing values.
+
+Therefore, all 2,823 records remain available for clustering.
+
+Actual output:
+
+```text
+Shape after removing missing values: (2823, 4)
+```
+
+### Step 5: Standardize the features
+
+```python
+scaler = StandardScaler()
+
+X_scaled = scaler.fit_transform(X)
+```
+
+Standardization transforms the numerical features so that they have approximately zero mean and unit variance.
+
+This is important because sales amounts may have much larger numerical values than order quantities.
+
+Without scaling, features with larger numerical ranges could dominate distance calculations.
+
+The scaled data has the following shape:
+
+```text
+(2823, 4)
+```
+
+### Step 6: Calculate WCSS using the Elbow Method
+
+```python
+wcss = []
+
+for k in range(1, 11):
+    model = KMeans(
+        n_clusters=k,
+        random_state=42,
+        n_init=10
+    )
+
+    model.fit(X_scaled)
+    wcss.append(model.inertia_)
+```
+
+This loop tests cluster counts from 1 to 10.
+
+For each value of K:
+
+* A K-Means model is created.
+* The model is fitted to the scaled data.
+* `model.inertia_` returns the WCSS value.
+* The value is stored in the `wcss` list.
+
+The parameter `random_state=42` makes the initialization reproducible, while `n_init=10` runs multiple centroid initializations and keeps the best result.
+
+### Step 7: Plot the Elbow graph
+
+```python
+plt.figure(figsize=(8, 5))
+
+plt.plot(range(1, 11), wcss, marker="o")
+
+plt.xlabel("Number of Clusters (K)")
+plt.ylabel("WCSS (Inertia)")
+plt.title("Elbow Method for Optimal K")
+plt.xticks(range(1, 11))
+plt.grid(True)
+
+plt.show()
+```
+
+The graph displays the number of clusters on the X-axis and WCSS on the Y-axis.
+
+As K increases, WCSS decreases because the data points are assigned to more clusters.
+
+We examine where the decrease starts becoming less pronounced to estimate a suitable K.
+
+**In this practical, K = 3 is used for the subsequent clustering steps.**
+
+### Step 8: Implement K-Means
+
+```python
+k = 3
+
+kmeans = KMeans(
+    n_clusters=k,
+    random_state=42,
+    n_init=10
+)
+
+kmeans_labels = kmeans.fit_predict(X_scaled)
+```
+
+The model creates three clusters from the scaled sales data.
+
+`fit_predict()` fits the model and returns a cluster label for every record.
+
+Each record is assigned a label: 0, 1, or 2.
+
+Actual cluster distribution:
+
+| Cluster   | Number of Records |
+| --------- | ----------------: |
+| 0         |               975 |
+| 1         |               852 |
+| 2         |               996 |
+| **Total** |         **2,823** |
+
+The distribution shows how the sales records are divided among the three K-Means clusters.
+
+### Step 9: Display K-Means results
+
+```python
+kmeans_results = X.copy()
+kmeans_results["KMeans_Cluster"] = kmeans_labels
+
+display(kmeans_results.head(10))
+```
+
+We create a copy of the selected features and add a new column named `KMeans_Cluster`.
+
+This allows us to view each record alongside its assigned cluster.
+
+### Step 10: Visualize K-Means clusters
+
+The scatter plot uses the first two scaled features:
+
+* X-axis: `QUANTITYORDERED`
+* Y-axis: `PRICEEACH`
+
+Each point represents a sales record, and its color represents the assigned K-Means cluster.
+
+The graph provides a two-dimensional view of the groups.
+
+Although the algorithm uses all four selected features, the scatter plot displays only two dimensions. Therefore, some differences between clusters may not be visible in this plot.
+
+### Step 11: Implement Hierarchical Clustering
+
+```python
+hierarchical = AgglomerativeClustering(
+    n_clusters=k,
+    linkage="ward"
+)
+
+hierarchical_labels = hierarchical.fit_predict(X_scaled)
+```
+
+This creates an agglomerative hierarchical clustering model.
+
+* `n_clusters=3` requests three clusters.
+* `linkage="ward"` selects the Ward linkage method.
+* `fit_predict()` fits the model and assigns a cluster label to each record.
+
+Ward linkage merges clusters in a way that minimizes the increase in within-cluster variance at each merging step.
+
+Actual cluster distribution:
+
+| Cluster   | Number of Records |
+| --------- | ----------------: |
+| 0         |             1,204 |
+| 1         |               934 |
+| 2         |               685 |
+| **Total** |         **2,823** |
+
+These cluster sizes differ from K-Means because the two algorithms form clusters differently.
+
+### Step 12: Display Hierarchical Clustering results
+
+```python
+hierarchical_results = X.copy()
+hierarchical_results["Hierarchical_Cluster"] = hierarchical_labels
+
+display(hierarchical_results.head(10))
+```
+
+This adds the hierarchical cluster label to each record.
+
+The resulting table allows us to examine the clusters assigned by the hierarchical algorithm.
+
+### Step 13: Visualize Hierarchical Clustering
+
+The scatter plot displays the first two scaled features, with colors representing the hierarchical cluster labels.
+
+This helps visualize how the hierarchical algorithm groups the records.
+
+As with the K-Means plot, only two of the four features are shown.
+
+### Step 14: Generate the dendrogram
+
+```python
+sample_size = min(100, len(X_scaled))
+
+sample_data = X_scaled[:sample_size]
+
+linked = linkage(sample_data, method="ward")
+```
+
+A dendrogram displays how individual data points and clusters are progressively merged.
+
+The code selects up to 100 observations to keep the graph manageable.
+
+`linkage()` calculates the hierarchical merging structure using Ward linkage.
+
+The `dendrogram()` function then visualizes the result.
+
+**Important:** The dendrogram uses a sample of up to 100 records, whereas the hierarchical clustering model uses all 2,823 records.
+
+### Step 15: Compare both clustering methods
+
+```python
+comparison = pd.DataFrame({
+    "K-Means Cluster": kmeans_labels,
+    "Hierarchical Cluster": hierarchical_labels
+})
+```
+
+This creates a table comparing the cluster labels assigned by both algorithms to each record.
+
+The code also displays the cluster sizes for each method.
+
+The cluster numbers are arbitrary labels. For example, cluster 0 from K-Means is not automatically equivalent to cluster 0 from Hierarchical Clustering.
+
+## 7. Actual Results
+
+### Elbow Method
+
+The notebook calculated WCSS for K values from 1 to 10.
+
+|  K |      WCSS |
+| -: | --------: |
+|  1 | 11,292.00 |
+|  2 |  6,741.69 |
+|  3 |  4,766.01 |
+|  4 |  3,934.89 |
+|  5 |  3,348.27 |
+|  6 |  2,858.82 |
+|  7 |  2,548.54 |
+|  8 |  2,350.66 |
+|  9 |  2,169.97 |
+| 10 |  2,019.75 |
+
+WCSS decreases as the number of clusters increases. The reduction is particularly large when moving from one cluster to two and from two to three.
+
+The improvement becomes less pronounced afterward, supporting K = 3 as a reasonable choice for this practical. The Elbow Method is heuristic, so the graph should be interpreted rather than treated as proof that K = 3 is uniquely optimal.
+
+### K-Means Results
+
+The dataset was divided into three clusters:
+
+* Cluster 0: 975 records
+* Cluster 1: 852 records
+* Cluster 2: 996 records
+
+### Hierarchical Clustering Results
+
+The dataset was divided into three clusters:
+
+* Cluster 0: 1,204 records
+* Cluster 1: 934 records
+* Cluster 2: 685 records
+
+### Comparison
+
+Both algorithms produced three clusters, but the cluster sizes differ.
+
+K-Means repeatedly assigns records to the nearest centroid and updates the centroids. Agglomerative Hierarchical Clustering merges groups according to the selected linkage method.
+
+Therefore, the algorithms can produce different assignments even when they use the same features and number of clusters.
+
+This practical does not calculate a formal clustering-quality score, so the cluster distributions alone do not establish which algorithm performs better.
+
+## 8. Advantages
+
+### K-Means
+
+1. Simple to understand and implement.
+2. Efficient for many numerical datasets.
+3. Produces cluster centroids that help summarize groups.
+4. Works well when clusters are reasonably compact and separated.
+
+### Hierarchical Clustering
+
+1. Shows relationships between clusters through a hierarchy.
+2. A dendrogram helps visualize the merging process.
+3. Does not require random centroid initialization.
+4. Can reveal nested grouping structures.
+
+## 9. Limitations
+
+### K-Means
+
+1. The number of clusters must be chosen beforehand.
+2. Results can depend on initialization.
+3. Sensitive to feature scaling and outliers.
+4. May not work well for irregularly shaped clusters.
+
+### Hierarchical Clustering
+
+1. Can be computationally expensive on large datasets.
+2. Early merging decisions are not normally reversed.
+3. Results depend on the selected linkage method and distance measure.
+4. The dendrogram can become difficult to interpret when many observations are included.
+
+## 10. Common Errors and Solutions
+
+### Error 1: FileNotFoundError
+
+**Cause:** Python cannot find `sales_data_sample.csv`.
+
+**Solution:** Keep the CSV file in the notebook's working directory or provide the correct file path.
+
+### Error 2: UnicodeDecodeError
+
+**Cause:** The CSV file contains characters that cannot be decoded using the selected encoding.
+
+**Solution:** Try loading the file with `encoding="latin1"`, as done in this practical.
+
+### Error 3: KeyError when selecting columns
+
+**Cause:** A column name in the code does not match the dataset.
+
+**Solution:** Run `print(df.columns.tolist())` and check the exact column names.
+
+### Error 4: ValueError while fitting the clustering model
+
+**Cause:** The input may contain missing or non-numerical values.
+
+**Solution:** Select numerical features, handle missing values, and scale the data before clustering.
+
+### Error 5: Clusters appear different in the two plots
+
+**Cause:** K-Means and Hierarchical Clustering use different clustering procedures.
+
+**Solution:** This is normal. Both methods can assign the same record to different clusters.
+
+## 11. Viva Questions and Answers
+
+**Q1. What is clustering?**
+Clustering is an unsupervised learning technique that groups similar data points.
+
+**Q2. What is unsupervised learning?**
+It is machine learning in which the data does not require predefined target labels for learning patterns.
+
+**Q3. What is K-Means?**
+K-Means partitions data into K clusters based on the distances between points and cluster centroids.
+
+**Q4. What does K represent?**
+K represents the number of clusters.
+
+**Q5. What value of K did we use?**
+We used K = 3.
+
+**Q6. What is a centroid?**
+A centroid is the mean position of the data points assigned to a cluster.
+
+**Q7. What is WCSS?**
+WCSS is the sum of squared distances between points and their assigned cluster centroids.
+
+**Q8. What is the Elbow Method?**
+It estimates a suitable K by plotting WCSS against different numbers of clusters.
+
+**Q9. Why does WCSS decrease when K increases?**
+More clusters generally allow points to be closer to their assigned centroids.
+
+**Q10. What is Hierarchical Clustering?**
+It builds a hierarchy of clusters by repeatedly merging or splitting groups.
+
+**Q11. Which type of hierarchical clustering did we use?**
+We used agglomerative clustering.
+
+**Q12. What is agglomerative clustering?**
+It starts with individual data points and progressively merges clusters.
+
+**Q13. What is Ward linkage?**
+Ward linkage merges clusters in a way that minimizes the increase in within-cluster variance.
+
+**Q14. What is a dendrogram?**
+A dendrogram is a tree diagram showing how clusters are merged at different distances.
+
+**Q15. Why did we use StandardScaler?**
+To standardize features so that differences in numerical scales do not dominate distance calculations.
+
+**Q16. Why did we select four features?**
+We selected order quantity, price per item, sales amount, and MSRP to represent numerical aspects of sales records.
+
+**Q17. How many records were used?**
+All 2,823 records were used.
+
+**Q18. How many clusters did K-Means produce?**
+It produced three clusters containing 975, 852, and 996 records.
+
+**Q19. How many clusters did Hierarchical Clustering produce?**
+It produced three clusters containing 1,204, 934, and 685 records.
+
+**Q20. Why are the cluster sizes different?**
+The algorithms use different procedures to form clusters, so their assignments can differ.
+
+**Q21. What is the purpose of `fit_predict()`?**
+It fits the clustering model and returns a cluster label for each input record.
+
+**Q22. What is the purpose of `random_state=42` in K-Means?**
+It makes the random initialization reproducible.
+
+**Q23. Why did we use only 100 records for the dendrogram?**
+To keep the visualization manageable and easier to interpret.
+
+**Q24. Is K = 3 guaranteed to be the best number of clusters?**
+No. The Elbow Method provides an estimate, and the result should be interpreted alongside the data and analysis objectives.
+
+**Q25. What is the main difference between K-Means and Hierarchical Clustering?**
+K-Means iteratively assigns points to centroids, whereas agglomerative Hierarchical Clustering progressively merges clusters into a hierarchy.
+
+## 12. Conclusion
+
+K-Means and Agglomerative Hierarchical Clustering were successfully implemented on the `sales_data_sample.csv` dataset using four numerical features: `QUANTITYORDERED`, `PRICEEACH`, `SALES`, and `MSRP`.
+
+The Elbow Method was used to examine WCSS values for cluster counts from 1 to 10, and K = 3 was selected for the clustering experiments. K-Means and Hierarchical Clustering both produced three clusters, although their cluster assignments and sizes differed.
+
+The clustering results were visualized using scatter plots, and a dendrogram was generated using a sample of 100 records. Thus, the practical demonstrates how clustering algorithms can be applied to sales data to explore patterns and group similar records.
